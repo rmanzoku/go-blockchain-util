@@ -16,7 +16,7 @@ type Account struct {
 	PublicKey        ed25519.PublicKey
 	PublicKeyBase64  string
 	Address          loom.Address
-	Signer           auth.Ed25519Signer
+	Signer           *auth.Ed25519Signer
 }
 
 // NewAccount return *Account from PrivateKey
@@ -30,7 +30,7 @@ func NewAccount(chainID string, pri ed25519.PrivateKey) (*Account, error) {
 		ChainID: chainID,
 		Local:   loom.LocalAddressFromPublicKey(ret.PublicKey),
 	}
-	ret.Signer = *auth.NewEd25519Signer(ret.PrivateKey)
+	ret.Signer = auth.NewEd25519Signer(ret.PrivateKey)
 
 	return ret, nil
 }
