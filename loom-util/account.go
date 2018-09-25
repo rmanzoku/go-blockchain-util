@@ -3,6 +3,7 @@ package loomutil
 import (
 	"encoding/base64"
 
+	"github.com/ethereum/go-ethereum/common"
 	loom "github.com/loomnetwork/go-loom"
 	"github.com/loomnetwork/go-loom/auth"
 	"golang.org/x/crypto/ed25519"
@@ -14,8 +15,7 @@ type Account struct {
 	PrivateKeyBase64 string
 	PublicKey        ed25519.PublicKey
 	PublicKeyBase64  string
-	ChainID          string
-	Address          string
+	Address          loom.Address
 	Signer           auth.Ed25519Signer
 }
 
@@ -26,7 +26,10 @@ func NewAccount(chainID string, pri ed25519.PrivateKey) (*Account, error) {
 	ret.PublicKey = ret.PrivateKey.Public().(ed25519.PublicKey)
 	ret.PrivateKeyBase64 = base64.StdEncoding.EncodeToString(ret.PrivateKey)
 	ret.PublicKeyBase64 = base64.StdEncoding.EncodeToString(ret.PublicKey)
-	ret.Address = loom.LocalAddressFromPublicKey(ret.PublicKey).String()
+	ret.Address = loom.Address{
+		ChainID: chainID,
+		Local:   loom.LocalAddressFromPublicKey(ret.PublicKey),
+	}
 	ret.Signer = *auth.NewEd25519Signer(ret.PrivateKey)
 
 	return ret, nil
@@ -48,4 +51,9 @@ func GenerateAccount(chainID string) (*Account, error) {
 		return nil, err
 	}
 	return NewAccount(chainID, pri)
+}
+
+// EthTypeAddress returns go-ethereum typed Address
+func (a Account) EthTypeAddress() common.Address {
+	return common.HexToAddress(a.Address.Local.String())
 }
